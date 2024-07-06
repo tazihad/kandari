@@ -1,5 +1,4 @@
----
-name: build-ublue-custom
+name: build-kandari-custom
 on:
   pull_request:
     branches:
@@ -20,7 +19,7 @@ env:
 
 jobs:
   build_push:
-    name: Build and push image
+    name: Build and push images
     runs-on: ubuntu-latest
 
     permissions:
@@ -89,16 +88,28 @@ jobs:
             org.opencontainers.image.description=${{ env.MY_IMAGE_DESC }}
             org.opencontainers.image.title=${{ env.MY_IMAGE_NAME }}
 
-      # Build image using Buildah action
-      - name: Build Image
-        id: build_image
+      # Build image using Buildah action - Kandari
+      - name: Build Image Kandari
+        id: build_kandari_image
         uses: redhat-actions/buildah-build@v2
         with:
           containerfiles: |
-            ./Containerfile
+            ./kandari.Containerfile
           # Postfix image name with -custom to make it a little more descriptive
           # Syntax: https://docs.github.com/en/actions/learn-github-actions/expressions#format
           image: ${{ env.MY_IMAGE_NAME }}
+          tags: |
+            ${{ steps.generate-tags.outputs.alias_tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          oci: false
+
+      - name: Build Image Nvidia
+        id: build_kandari_image_nvidia
+        uses: redhat-actions/buildah-build@v2
+        with:
+          containerfiles: |
+            ./kandari-nvidia.Containerfile
+          image: ${{ env.MY_IMAGE_NAME }}-nvidia
           tags: |
             ${{ steps.generate-tags.outputs.alias_tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -119,15 +130,30 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Push Image to GHCR
+      - name: Push Image Kandari to GHCR
         uses: redhat-actions/push-to-registry@v2
-        id: push
+        id: push_kandari
         env:
           REGISTRY_USER: ${{ github.actor }}
           REGISTRY_PASSWORD: ${{ github.token }}
         with:
-          image: ${{ steps.build_image.outputs.image }}
-          tags: ${{ steps.build_image.outputs.tags }}
+          image: ${{ steps.build_kandari_image.outputs.image }}
+          tags: ${{ steps.build_kandari_image.outputs.tags }}
+          registry: ${{ steps.registry_case.outputs.lowercase }}
+          username: ${{ env.REGISTRY_USER }}
+          password: ${{ env.REGISTRY_PASSWORD }}
+          extra-args: |
+            --disable-content-trust
+
+      - name: Push Image Kandari Nvidia to GHCR
+        uses: redhat-actions/push-to-registry@v2
+        id: push_kandari_nvidia
+        env:
+          REGISTRY_USER: ${{ github.actor }}
+          REGISTRY_PASSWORD: ${{ github.token }}
+        with:
+          image: ${{ steps.build_kandari_image_nvidia.outputs.image }}
+          tags: ${{ steps.build_kandari_image_nvidia.outputs.tags }}
           registry: ${{ steps.registry_case.outputs.lowercase }}
           username: ${{ env.REGISTRY_USER }}
           password: ${{ env.REGISTRY_PASSWORD }}
@@ -143,11 +169,20 @@ jobs:
       - uses: sigstore/cosign-installer@v3.5.0
         if: github.event_name != 'pull_request'
 
-      - name: Sign container image
+      - name: Sign kandari container image
         if: github.event_name != 'pull_request'
         run: |
-          cosign sign -y --key env://COSIGN_PRIVATE_KEY ${{ steps.registry_case.outputs.lowercase }}/${{ steps.build_image.outputs.image }}@${TAGS}
+          cosign sign -y --key env://COSIGN_PRIVATE_KEY ${{ steps.registry_case.outputs.lowercase }}/${{ steps.build_kandari_image.outputs.image }}@${TAGS}
         env:
-          TAGS: ${{ steps.push.outputs.digest }}
+          TAGS: ${{ steps.push_kandari.outputs.digest }}
+          COSIGN_EXPERIMENTAL: false
+          COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}
+
+      - name: Sign kandari container image Nvidia
+        if: github.event_name != 'pull_request'
+        run: |
+          cosign sign -y --key env://COSIGN_PRIVATE_KEY ${{ steps.registry_case.outputs.lowercase }}/${{ steps.build_kandari_image_nvidia.outputs.image }}@${TAGS}
+        env:
+          TAGS: ${{ steps.push_kandari_nvidia.outputs.digest }}
           COSIGN_EXPERIMENTAL: false
           COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}

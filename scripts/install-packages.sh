@@ -17,6 +17,7 @@ cli_packages=(
 gui_packages=(
     "konqueror"
     "featherpad"
+    "kcm_systemd"
 )
 
 third_party_packages=(
@@ -31,4 +32,3 @@ packages=(
 
 rpm-ostree install ${packages[@]}
 
-# make script executable

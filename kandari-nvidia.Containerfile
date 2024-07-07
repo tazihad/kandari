@@ -1,6 +1,6 @@
 ARG SOURCE_IMAGE="kinoite"
 ARG SOURCE_SUFFIX="-nvidia"
-ARG SOURCE_TAG="40"
+ARG SOURCE_TAG="latest"
 
 FROM ghcr.io/ublue-os/${SOURCE_IMAGE}${SOURCE_SUFFIX}:${SOURCE_TAG}
 

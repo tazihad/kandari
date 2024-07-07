@@ -8,9 +8,4 @@ rpm-ostree uninstall \
     firefox \
     firefox-langpacks
 
-rpm-ostree install \
-    zsh \
-    fastfetch
-
-
-systemctl enable podman.socket
+# make script executable

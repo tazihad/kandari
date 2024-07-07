@@ -7,3 +7,5 @@ RELEASE="$(rpm -E %fedora)"
 rpm-ostree uninstall \
     firefox \
     firefox-langpacks
+
+# make script executable

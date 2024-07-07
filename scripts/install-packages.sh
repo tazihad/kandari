@@ -30,3 +30,5 @@ packages=(
 )
 
 rpm-ostree install ${packages[@]}
+
+# make script executable

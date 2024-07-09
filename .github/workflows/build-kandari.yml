@@ -16,7 +16,8 @@ env:
   MY_IMAGE_NAME: "${{ github.event.repository.name }}"  # the name of the image produced by this build, matches repo names
   MY_IMAGE_DESC: "Kandari OS"
   IMAGE_REGISTRY: "ghcr.io/${{ github.repository_owner }}"  # do not edit
-
+  FEDORA_RELEASE: "40"  # Set the Fedora release number here
+  PATCH_VERSION: "0"
 jobs:
   build_push:
     name: Build and push kandari images
@@ -34,6 +35,14 @@ jobs:
 
       - name: Maximize build space
         uses: ublue-os/remove-unwanted-software@v7
+
+      - name: Extract current date and time
+        id: date
+        run: |
+          DATE=$(date -u +'%Y%m%d')
+          PATCH={{ env.FEDORA_RELEASE }}  # Set the initial patch version
+          VERSION="${{ env.FEDORA_RELEASE }}.${DATE}.${PATCH}"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Generate tags
         id: generate-tags
@@ -101,6 +110,8 @@ jobs:
           tags: |
             ${{ steps.generate-tags.outputs.alias_tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            VERSION=${{ env.VERSION }}
           oci: false
 
       - name: Build Kandari Image Nvidia
@@ -113,6 +124,8 @@ jobs:
           tags: |
             ${{ steps.generate-tags.outputs.alias_tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            VERSION=${{ env.VERSION }}
           oci: false
 
       # Workaround bug where capital letters in your GitHub username make it impossible to push to GHCR.

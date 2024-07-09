@@ -1,4 +1,4 @@
-name: build-kandari-custom
+name: build-kandari
 on:
   pull_request:
     branches:

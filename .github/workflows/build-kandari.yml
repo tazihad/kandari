@@ -40,7 +40,7 @@ jobs:
         id: date
         run: |
           DATE=$(date -u +'%Y%m%d')
-          PATCH={{ env.FEDORA_RELEASE }}  # Set the initial patch version
+          PATCH={{ env.PATCH_VERSION }}  # Set the initial patch version
           VERSION="${{ env.FEDORA_RELEASE }}.${DATE}.${PATCH}"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 

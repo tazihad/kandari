@@ -16,7 +16,7 @@ env:
   MY_IMAGE_NAME: "${{ github.event.repository.name }}"  # the name of the image produced by this build, matches repo names
   MY_IMAGE_DESC: "Kandari OS"
   IMAGE_REGISTRY: "ghcr.io/${{ github.repository_owner }}"  # do not edit
-  FEDORA_RELEASE: "40"  # Set the Fedora release number here
+  FEDORA_RELEASE: ""  # Set the Fedora release number here
   PATCH_VERSION: "0"
 jobs:
   build_push:
@@ -35,6 +35,12 @@ jobs:
 
       - name: Maximize build space
         uses: ublue-os/remove-unwanted-software@v7
+
+      - name: Extract FEDORA_RELEASE
+        id: extract_fedora_release
+        run: |
+          FEDORA_RELEASE=$(grep 'ARG SOURCE_TAG=' kandari.Containerfile | sed 's/ARG SOURCE_TAG=//')
+          echo "FEDORA_RELEASE=$SOURCE_TAG" >> $GITHUB_ENV
 
       - name: Extract current date and time
         id: date

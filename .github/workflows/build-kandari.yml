@@ -16,8 +16,9 @@ env:
   MY_IMAGE_NAME: "${{ github.event.repository.name }}"  # the name of the image produced by this build, matches repo names
   MY_IMAGE_DESC: "Kandari OS"
   IMAGE_REGISTRY: "ghcr.io/${{ github.repository_owner }}"  # do not edit
-  FEDORA_RELEASE: ""  # Set the Fedora release number here
   PATCH_VERSION: "0"
+  VERSION: ""
+
 jobs:
   build_push:
     name: Build and push kandari images
@@ -40,15 +41,15 @@ jobs:
         id: extract_fedora_release
         run: |
           FEDORA_RELEASE=$(grep 'ARG SOURCE_TAG=' kandari.Containerfile | sed 's/ARG SOURCE_TAG=//')
-          echo "FEDORA_RELEASE=$SOURCE_TAG" >> $GITHUB_ENV
+          echo "FEDORA_RELEASE=$FEDORA_RELEASE" >> $GITHUB_ENV
 
       - name: Extract current date and time
         id: date
         run: |
           DATE=$(date -u +'%Y%m%d')
-          PATCH=${{ env.PATCH_VERSION }}  # Set the initial patch version
-          VERSION="${{ env.FEDORA_RELEASE }}.${DATE}.${PATCH}"
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          PATCH=${{ env.PATCH_VERSION }}
+          VERSION="${FEDORA_RELEASE}.${DATE}.${PATCH}"
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
 
       - name: Generate tags
         id: generate-tags
@@ -105,7 +106,7 @@ jobs:
             org.opencontainers.image.version=${{ env.VERSION }}
 
       # Build image using Buildah action - Kandari
-      - name: Build Image Kandari
+      - name: Build Image Kandaric
         id: build_kandari_image
         uses: redhat-actions/buildah-build@v2
         with:

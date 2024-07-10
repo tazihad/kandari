@@ -16,7 +16,6 @@ cli_packages=(
 
 gui_packages=(
     "konqueror"
-    "featherpad"
 )
 
 third_party_packages=(

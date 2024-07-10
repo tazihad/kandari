@@ -106,7 +106,7 @@ jobs:
             org.opencontainers.image.version=${{ env.VERSION }}
 
       # Build image using Buildah action - Kandari
-      - name: Build Image Kandaric
+      - name: Build Image Kandari
         id: build_kandari_image
         uses: redhat-actions/buildah-build@v2
         with:
@@ -120,7 +120,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           oci: false
 
-      - name: Build Kandari Image Nvidia
+      - name: Build Image Kandari Nvidia
         id: build_kandari_image_nvidia
         uses: redhat-actions/buildah-build@v2
         with:

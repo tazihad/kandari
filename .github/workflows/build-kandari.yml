@@ -40,7 +40,7 @@ jobs:
       - name: Extract FEDORA_RELEASE
         id: extract_fedora_release
         run: |
-          FEDORA_RELEASE=$(grep 'ARG SOURCE_TAG=' kandari.Containerfile | sed 's/ARG SOURCE_TAG=//')
+          FEDORA_RELEASE=$(grep 'ARG SOURCE_TAG=' kandari.Containerfile | sed 's/ARG SOURCE_TAG=//g' | tr -d '"')
           echo "FEDORA_RELEASE=$FEDORA_RELEASE" >> $GITHUB_ENV
 
       - name: Extract current date and time

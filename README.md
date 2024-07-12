@@ -27,3 +27,9 @@ To rebase an existing atomic Fedora installation to the latest build:
   ```
   systemctl reboot
   ```
+
+## Verification  
+These images are signed with Sigstore's cosign. You can verify the signature by downloading the `cosign.pub` file from this repo and running the following command:
+```
+cosign verify --key cosign.pub ghcr.io/tazihad/kandari-nvidia:latest
+```

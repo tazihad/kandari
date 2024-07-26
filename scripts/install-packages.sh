@@ -15,7 +15,7 @@ cli_packages=(
 )
 
 gui_packages=(
-    "konqueror"
+    "falkon"
 )
 
 third_party_packages=(

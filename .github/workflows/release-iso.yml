@@ -28,12 +28,12 @@ jobs:
         id: build
         with:
           arch: x86_64
-          image_name: hostbazzite
+          image_name: kandari
           image_repo: ${{ steps.registry_case.outputs.lowercase }}
           variant: "Kinoite"
           version: 40
           image_tag: latest
-          iso_name: "hostbazzite.iso"
+          iso_name: "kandari.iso"
       - name: Upload ISO
         uses: actions/upload-artifact@v4
         with:

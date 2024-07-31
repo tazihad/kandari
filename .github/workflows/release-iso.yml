@@ -66,7 +66,7 @@ jobs:
 
       - name: Upload ISO to Github release
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if gh release list -R ${{ github.repository_owner }}/${{ github.event.repository.name }} | grep "kandari-iso"; then
             gh release view kandari-iso -R ${{ github.repository_owner }}/${{ github.event.repository.name }} --json assets -q .assets[].name | xargs --no-run-if-empty -L 1 gh release delete-asset kandari-iso -R ${{ github.repository_owner }}/${{ github.event.repository.name }}

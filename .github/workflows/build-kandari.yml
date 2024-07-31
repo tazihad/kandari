@@ -10,6 +10,7 @@ on:
       - main
     paths-ignore:
       - '**/README.md'
+      - '**/LICENSE'
   workflow_dispatch:
 
 env:

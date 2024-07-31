@@ -79,8 +79,3 @@ jobs:
         run:
           gh release upload kandari-iso ${{ steps.isogenerator.outputs.sha256sum-path }} -R ${{ github.repository_owner }}/${{ github.event.repository.name }} --clobber
 
-on:
-  push:
-    paths:
-      - '.github/workflows/build-iso.yml'
-  workflow_dispatch:

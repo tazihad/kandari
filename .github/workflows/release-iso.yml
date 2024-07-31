@@ -23,9 +23,9 @@ jobs:
         uses: ASzc/change-string-case-action@v6
         with:
           string: ghcr.io/${{ github.repository_owner }}
-      - name: Build ISO
+      - name: Build ISO Kandari
         uses: jasonn3/build-container-installer@v1.2.1
-        id: build
+        id: build-iso-kandari
         with:
           arch: x86_64
           image_name: kandari
@@ -34,6 +34,19 @@ jobs:
           version: 40
           image_tag: latest
           iso_name: "kandari.iso"
+          image_signed: true
+      - name: Build ISO Kandari NVIDIA
+        uses: jasonn3/build-container-installer@v1.2.1
+        id: build-iso-kandari-nvidia
+        with:
+          arch: x86_64
+          image_name: kandari-nvidia
+          image_repo: ${{ steps.registry_case.outputs.lowercase }}
+          variant: "Kinoite"
+          version: 40
+          image_tag: latest
+          iso_name: "kandari.iso"   
+          image_signed: true
       - name: Upload ISO
         uses: actions/upload-artifact@v4
         with:

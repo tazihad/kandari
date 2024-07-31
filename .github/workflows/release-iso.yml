@@ -1,11 +1,13 @@
-push:
-  paths:
-    - '.github/workflows/build-iso.yml'
-  workflow_dispatch:
+on:
+  push:
+    paths:
+      - '.github/workflows/build-iso.yml'
+    workflow_dispatch:
 
 env:
   IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
 
+name: release-iso
 jobs:
   release-iso:
     name: Generate and Release ISOs
@@ -16,14 +18,14 @@ jobs:
       id-token: write
     strategy:
       fail-fast: false
-    matrix:
-      image_name:
-        - kandari
-        - kandari-nvidia
-      major_version:
-        - 40
-      image_tag:
-        - latest
+      matrix:
+        image_name:
+          - kandari
+          - kandari-nvidia
+        major_version:
+          - 40
+        image_tag:
+          - latest
 
     steps:
       - name: Determine variant

@@ -64,18 +64,15 @@ jobs:
           retention-days: 1  # Change retention as needed
           compression-level: 0
 
-      - name: Upload ISO to GitHub release
+      - name: Upload ISO
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ISO_PATH="${{ steps.build.outputs.iso_path }}"
-          if gh release list -R ${{ github.repository_owner }}/${{ github.event.repository.name }} | grep -q "kandari-iso"; then
-            echo "Updating existing release kandari-iso"
-            gh release view kandari-iso -R ${{ github.repository_owner }}/${{ github.event.repository.name }} --json assets -q .assets[].name | xargs --no-run-if-empty -L 1 gh release delete-asset kandari-iso -R ${{ github.repository_owner }}/${{ github.event.repository.name }}
-            gh release upload kandari-iso "$ISO_PATH" -R ${{ github.repository_owner }}/${{ github.event.repository.name }} --clobber
+          if gh release list -R ${{ github.repository_owner }}/${{ github.event.repository.name }} | grep "auto-iso"; then
+            gh release view auto-iso -R ${{ github.repository_owner }}/${{ github.event.repository.name }} --json assets -q .assets[].name | xargs --no-run-if-empty -L 1 gh release delete-asset auto-iso -R ${{ github.repository_owner }}/${{ github.event.repository.name }}
+            gh release upload auto-iso ${{ steps.isogenerator.outputs.iso-path }} -R ${{ github.repository_owner }}/${{ github.event.repository.name }} --clobber
           else
-            echo "Creating new release kandari-iso"
-            gh release create kandari-iso "$ISO_PATH" -t ISO -n "This is an automatically generated ISO release." -R ${{ github.repository_owner }}/${{ github.event.repository.name }}
+            gh release create auto-iso ${{ steps.isogenerator.outputs.iso-path }} -t ISO -n "This is an automatically generated ISO release." -R ${{ github.repository_owner }}/${{ github.event.repository.name }}
           fi
 
       - name: Upload SHA256SUM

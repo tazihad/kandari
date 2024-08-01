@@ -79,7 +79,6 @@ jobs:
             echo "split_files=$(ls ${iso_path}.z*)" >> $GITHUB_ENV
           else
             echo "split_files=$iso_path $checksum_path" >> $GITHUB_ENV
-          fi
 
       - name: Create GitHub Release
         id: create_release
@@ -87,7 +86,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const response = await github.repos.createRelease({
+            const response = await github.rest.repos.createRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
               tag_name: process.env.tag_name,
@@ -97,6 +96,7 @@ jobs:
               prerelease: false
             });
             core.setOutput('upload_url', response.data.upload_url);
+            core.setOutput('release_id', response.data.id);
 
       - name: Upload ISO to GitHub Release
         uses: actions/github-script@v6
@@ -106,16 +106,17 @@ jobs:
             const fs = require('fs');
             const splitFiles = process.env.split_files.split(' ');
             const uploadUrl = core.getInput('upload_url');
+            const releaseId = core.getInput('release_id');
 
             for (const file of splitFiles) {
               const filePath = file.trim();
               const fileName = filePath.split('/').pop();
               const fileStat = fs.statSync(filePath);
 
-              await github.repos.uploadReleaseAsset({
+              await github.rest.repos.uploadReleaseAsset({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                release_id: context.payload.release.id,
+                release_id: releaseId,
                 name: fileName,
                 data: fs.readFileSync(filePath),
                 headers: {

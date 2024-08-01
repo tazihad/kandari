@@ -38,7 +38,6 @@ jobs:
         run: |
           VARIANT="Kinoite"
           echo "variant=${VARIANT}" >> $GITHUB_ENV
-
       - name: Generate ISO  
         uses: jasonn3/build-container-installer@main
         id: build
@@ -63,19 +62,3 @@ jobs:
             ${{ steps.build.outputs.iso_path }}-CHECKSUM
           if-no-files-found: error
           retention-days: 1
-
-      - name: Start ssh-agent
-        id: ssh-agent
-        uses: webfactory/ssh-agent@v0.7.0
-        with:
-          ssh-private-key: ${{ secrets.SOURCEFORGE_SSH_PRIVATE_KEY }}
-          ssh-passphrase: ${{ secrets.SOURCEFORGE_SSH_PASSPHRASE }}
-
-      - name: Upload ISO to SourceForge
-        env:
-          SOURCEFORGE_USERNAME: ${{ secrets.SOURCEFORGE_USERNAME }}
-        run: |
-          rsync -avz -e "ssh -o StrictHostKeyChecking=no" \
-            ${{ steps.build.outputs.iso_path }} \
-            ${{ steps.build.outputs.iso_path }}-CHECKSUM \
-            ${{ secrets.SOURCEFORGE_USERNAME }}@web.sourceforge.net:/home/frs/project/${{ secrets.SOURCEFORGE_PROJECT_NAME }}

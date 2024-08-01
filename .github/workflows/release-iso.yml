@@ -69,6 +69,18 @@ jobs:
           TAG_NAME=$(date +'%Y%m%d')
           echo "tag_name=${TAG_NAME}" >> $GITHUB_ENV
 
+      - name: Split ISO if too large
+        id: split
+        run: |
+          iso_path="${{ steps.build.outputs.iso_path }}"
+          checksum_path="${{ steps.build.outputs.iso_path }}-CHECKSUM"
+          if [ $(du -m "$iso_path" | cut -f1) -gt 2000 ]; then
+            zip -s 2000m "${iso_path}.zip" "$iso_path"
+            echo "split_files=$(ls ${iso_path}.z*)" >> $GITHUB_ENV
+          else
+            echo "split_files=$iso_path $checksum_path" >> $GITHUB_ENV
+          fi
+
       - name: Create GitHub Release
         id: create_release
         uses: actions/github-script@v6
@@ -92,32 +104,23 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
-            const isoPath = `${{ steps.build.outputs.iso_path }}`;
-            const checksumPath = `${{ steps.build.outputs.iso_path }}-CHECKSUM`;
+            const splitFiles = process.env.split_files.split(' ');
+            const uploadUrl = core.getInput('upload_url');
 
-            const isoFile = fs.readFileSync(isoPath);
-            const checksumFile = fs.readFileSync(checksumPath);
+            for (const file of splitFiles) {
+              const filePath = file.trim();
+              const fileName = filePath.split('/').pop();
+              const fileStat = fs.statSync(filePath);
 
-            await github.repos.uploadReleaseAsset({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              release_id: context.payload.release.id,
-              name: ${{ steps.build.outputs.iso_name }},
-              data: isoFile,
-              headers: {
-                'content-type': 'application/octet-stream',
-                'content-length': isoFile.length
-              }
-            });
-
-            await github.repos.uploadReleaseAsset({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              release_id: context.payload.release.id,
-              name: `${{ steps.build.outputs.iso_name }}-CHECKSUM`,
-              data: checksumFile,
-              headers: {
-                'content-type': 'text/plain',
-                'content-length': checksumFile.length
-              }
-            });
+              await github.repos.uploadReleaseAsset({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: context.payload.release.id,
+                name: fileName,
+                data: fs.readFileSync(filePath),
+                headers: {
+                  'content-type': 'application/octet-stream',
+                  'content-length': fileStat.size
+                }
+              });
+            }

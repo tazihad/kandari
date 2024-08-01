@@ -79,6 +79,7 @@ jobs:
             echo "split_files=$(ls ${iso_path}.z*)" >> $GITHUB_ENV
           else
             echo "split_files=$iso_path $checksum_path" >> $GITHUB_ENV
+          fi
 
       - name: Create GitHub Release
         id: create_release

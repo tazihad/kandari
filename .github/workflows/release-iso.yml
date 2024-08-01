@@ -1,13 +1,14 @@
+name: Release ISO
+
 on:
   push:
     paths:
-      - '.github/workflows/build-iso.yml'
+      - '.github/workflows/release-iso.yml'
   workflow_dispatch:
 
 env:
   IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
 
-name: Release ISO
 jobs:
   release-iso:
     name: Generate and Release ISOs
@@ -20,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image_name: 
+        image_name:
           - kandari
           - kandari-nvidia
         major_version:
@@ -30,14 +31,13 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Determine variant
         id: var
         run: |
           VARIANT="Kinoite"
           echo "variant=${VARIANT}" >> $GITHUB_ENV
-
       - name: Generate ISO  
         uses: jasonn3/build-container-installer@main
         id: build
@@ -53,52 +53,14 @@ jobs:
           enable_cache_dnf: "false"
           enable_cache_skopeo: "false"
 
-      - name: Split ISO if too large
-        id: split
-        env:
-          LIMIT_MB: 2000
-        run: |
-          iso_path="${{ steps.build.outputs.iso_path }}"
-          checksum_path="${{ steps.build.outputs.iso_path }}-CHECKSUM"
-          split_files=""
-          
-          if [ $(du -m "$iso_path" | cut -f1) -gt $LIMIT_MB ]; then
-            zip -s ${LIMIT_MB}m "${iso_path}.zip" "$iso_path"
-            split_files=$(ls ${iso_path}.z*)
-          else
-            split_files="$iso_path $checksum_path"
-          fi
-          
-          echo "split_files=$split_files" >> $GITHUB_ENV
-
-      - name: Create GitHub Release
-        id: create_release
-        uses: actions/github-script@v6
+      - name: Upload ISO + Checksum to Artifacts
+        uses: actions/upload-artifact@v4
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const response = await github.rest.repos.createRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag_name: process.env.tag_name,
-              name: process.env.tag_name,
-              body: 'automated release',
-              draft: false,
-              prerelease: false
-            });
-            core.setOutput('upload_url', response.data.upload_url);
-            core.setOutput('release_id', response.data.id);
+          name: ${{ steps.build.outputs.iso_name }}
+          path: |
+            ${{ steps.build.outputs.iso_path }}
+            ${{ steps.build.outputs.iso_path }}-CHECKSUM
+          if-no-files-found: error
+          retention-days: 1
 
-      - name: Upload ISO to GitHub Release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          upload_url=${{ steps.create_release.outputs.upload_url }}
-          split_files=${{ env.split_files }}
-          
-          for file in $split_files; do
-            gh release upload ${{ steps.create_release.outputs.release_id }} \
-              --repo ${{ github.repository }} \
-              --clobber \
-              "$file"
-          done
+      

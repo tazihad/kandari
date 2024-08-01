@@ -23,7 +23,6 @@ jobs:
       matrix:
         image_name:
           - kandari
-          - kandari-nvidia
         major_version:
           - 40
         image_tag:
@@ -100,13 +99,14 @@ jobs:
             core.setOutput('upload_url', response.data.upload_url);
             core.setOutput('release_id', response.data.id);
 
-      - name: Upload ISO to GitHub Release
+      - name: Upload Files to GitHub Release
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
             const path = require('path');
+
             const splitFiles = process.env.split_files.split(' ');
             const uploadUrl = core.getInput('upload_url');
             const releaseId = core.getInput('release_id');
@@ -115,8 +115,8 @@ jobs:
               const filePath = file.trim();
               const fileName = path.basename(filePath);
 
-              // Check if the path is a file
-              if (fs.lstatSync(filePath).isFile()) {
+              // Check if the path is a file and exists
+              if (fs.existsSync(filePath) && fs.lstatSync(filePath).isFile()) {
                 const fileStat = fs.statSync(filePath);
 
                 await github.rest.repos.uploadReleaseAsset({
@@ -131,7 +131,6 @@ jobs:
                   }
                 });
               } else {
-                console.log(`Skipping directory: ${filePath}`);
+                console.log(`Skipping non-file or missing path: ${filePath}`);
               }
             }
-

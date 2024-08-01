@@ -54,7 +54,7 @@ jobs:
           enable_cache_dnf: "false"
           enable_cache_skopeo: "false"
 
-      - name: Upload ISO + Checksum
+      - name: Upload ISO + Checksum to Artifacts
         uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.build.outputs.iso_name }}
@@ -134,5 +134,4 @@ jobs:
                 console.log(`Skipping directory: ${filePath}`);
               }
             }
-          env:
-            split_files: ${{ steps.split.outputs.split_files }}
+

@@ -82,7 +82,7 @@ jobs:
           fi
           echo "## github upload"
 
-          echo ${{ secrets.kandari_release_iso_token }} | gh auth login --with-token
+          echo $GITHUB_TOKEN | gh auth login --with-token
           gh release create ${{ env.tag_name }} --title ${{ env.tag_name }} --repo ${{ github.repository }} --notes "automated release" || echo "release already exists"
 
           GITHUB_LINK=https://github.com/${GITHUB_REPOSITORY}/releases/download/${{ env.tag_name }}

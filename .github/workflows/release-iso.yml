@@ -105,24 +105,33 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
+            const path = require('path');
             const splitFiles = process.env.split_files.split(' ');
             const uploadUrl = core.getInput('upload_url');
             const releaseId = core.getInput('release_id');
 
             for (const file of splitFiles) {
               const filePath = file.trim();
-              const fileName = filePath.split('/').pop();
-              const fileStat = fs.statSync(filePath);
+              const fileName = path.basename(filePath);
 
-              await github.rest.repos.uploadReleaseAsset({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                release_id: releaseId,
-                name: fileName,
-                data: fs.readFileSync(filePath),
-                headers: {
-                  'content-type': 'application/octet-stream',
-                  'content-length': fileStat.size
-                }
-              });
+              // Check if the path is a file
+              if (fs.lstatSync(filePath).isFile()) {
+                const fileStat = fs.statSync(filePath);
+
+                await github.rest.repos.uploadReleaseAsset({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  release_id: releaseId,
+                  name: fileName,
+                  data: fs.readFileSync(filePath),
+                  headers: {
+                    'content-type': 'application/octet-stream',
+                    'content-length': fileStat.size
+                  }
+                });
+              } else {
+                console.log(`Skipping directory: ${filePath}`);
+              }
             }
+          env:
+            split_files: ${{ steps.split.outputs.split_files }}

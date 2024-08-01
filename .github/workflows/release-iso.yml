@@ -74,12 +74,17 @@ jobs:
         run: |
           iso_path="${{ steps.build.outputs.iso_path }}"
           checksum_path="${{ steps.build.outputs.iso_path }}-CHECKSUM"
+          split_files=""
+
+          # Split the ISO if it's larger than 2000 MB
           if [ $(du -m "$iso_path" | cut -f1) -gt 2000 ]; then
             zip -s 2000m "${iso_path}.zip" "$iso_path"
-            echo "split_files=$(ls ${iso_path}.z*)" >> $GITHUB_ENV
+            split_files=$(ls ${iso_path}.z*)
           else
-            echo "split_files=$iso_path $checksum_path" >> $GITHUB_ENV
+            split_files="$iso_path $checksum_path"
           fi
+
+          echo "split_files=$split_files" >> $GITHUB_ENV
 
       - name: Create GitHub Release
         id: create_release

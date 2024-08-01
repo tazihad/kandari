@@ -69,37 +69,55 @@ jobs:
           TAG_NAME=$(date +'%Y%m%d')
           echo "tag_name=${TAG_NAME}" >> $GITHUB_ENV
 
-      - name: Create GitHub Release and Upload ISO + Checksum
-        id: upload-github-release
-        shell: bash
-        env:
-          LIMIT_MB: '2000'
-          GITHUB_TOKEN: ${{ secrets.kandari_release_iso_token }}
-        run: |
-          if [ -z "${{ env.tag_name }}" ]; then 
-            echo "## no release tag given"
-            exit 0
-          fi
-          echo "## github upload"
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const response = await github.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: process.env.tag_name,
+              name: process.env.tag_name,
+              body: 'automated release',
+              draft: false,
+              prerelease: false
+            });
+            core.setOutput('upload_url', response.data.upload_url);
 
-          echo $GITHUB_TOKEN | gh auth login --with-token
-          gh release create ${{ env.tag_name }} --title ${{ env.tag_name }} --repo ${{ github.repository }} --notes "automated release" || echo "release already exists"
+      - name: Upload ISO to GitHub Release
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const isoPath = `${{ steps.build.outputs.iso_path }}`;
+            const checksumPath = `${{ steps.build.outputs.iso_path }}-CHECKSUM`;
 
-          GITHUB_LINK=https://github.com/${GITHUB_REPOSITORY}/releases/download/${{ env.tag_name }}
+            const isoFile = fs.readFileSync(isoPath);
+            const checksumFile = fs.readFileSync(checksumPath);
 
-          if [[ -z "$(du --threshold=${LIMIT_MB}M ${{ steps.build.outputs.iso_path }})" ]]; then
-            # iso is small enough to upload already
-            gh release upload ${{ env.tag_name }} --repo ${{ github.repository }} --clobber \
-              ${{ steps.build.outputs.iso_path }} ${{ steps.build.outputs.iso_path }}-CHECKSUM
-          else
-            # iso is too big - creating a split-zip
-            zip -j -s ${LIMIT_MB}m ${{ steps.build.outputs.iso_path }}.zip ${{ steps.build.outputs.iso_path }}
-            
-            REMOTE_FILES=$(find . -maxdepth 1 -name "*.z*" -exec basename {} \; | xargs -I{} echo "-w \"${GITHUB_LINK}/{}\"")
-            gh release upload ${{ env.tag_name }} --repo ${{ github.repository }} --clobber \
-              ./${{ steps.build.outputs.iso_path }}+(.z*|.sha*|.pkgs|.sig|.torrent)
-            
-            # Upload Checksum
-            gh release upload ${{ env.tag_name }} --repo ${{ github.repository }} --clobber \
-              ${{ steps.build.outputs.iso_path }}-CHECKSUM
-          fi
+            await github.repos.uploadReleaseAsset({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: context.payload.release.id,
+              name: ${{ steps.build.outputs.iso_name }},
+              data: isoFile,
+              headers: {
+                'content-type': 'application/octet-stream',
+                'content-length': isoFile.length
+              }
+            });
+
+            await github.repos.uploadReleaseAsset({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: context.payload.release.id,
+              name: `${{ steps.build.outputs.iso_name }}-CHECKSUM`,
+              data: checksumFile,
+              headers: {
+                'content-type': 'text/plain',
+                'content-length': checksumFile.length
+              }
+            });

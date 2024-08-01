@@ -62,7 +62,6 @@ jobs:
             ${{ steps.build.outputs.iso_path }}-CHECKSUM
           if-no-files-found: error
           retention-days: 1  # Change retention as needed
-          compression-level: 0
 
       - name: Extract Tag Name
         id: extract_tag

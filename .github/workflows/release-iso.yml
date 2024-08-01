@@ -69,35 +69,37 @@ jobs:
           TAG_NAME=$(date +'%Y%m%d')
           echo "tag_name=${TAG_NAME}" >> $GITHUB_ENV
 
-      - name: Create GitHub Release
-        id: create_release
-        uses: actions/create-release@v1
+      - name: Create GitHub Release and Upload ISO + Checksum
+        id: upload-github-release
+        shell: bash -O extglob
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ env.tag_name }}
-          release_name: Release ${{ env.tag_name }}
-          body: |
-            Release notes for ${{ env.tag_name }}
-          draft: false
-          prerelease: false
-
-      - name: Upload ISO to Release
-        uses: actions/upload-release-asset@v1
-        env:
+          LIMIT_MB: '2000'
           GITHUB_TOKEN: ${{ secrets.kandari_release_iso_token }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ steps.build.outputs.iso_path }}
-          asset_name: ${{ steps.build.outputs.iso_name }}
-          asset_content_type: application/octet-stream
+        run: |
+          if [ -z "${{ env.tag_name }}" ]; then 
+            echo "## no release tag given"
+            exit 0
+          fi
+          echo "## github upload"
 
-      - name: Upload Checksum to Release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ steps.build.outputs.iso_path }}-CHECKSUM
-          asset_name: ${{ steps.build.outputs.iso_name }}-CHECKSUM
-          asset_content_type: text/plain
+          echo ${{ secrets.kandari_release_iso_token }} | gh auth login --with-token
+          gh release create ${{ env.tag_name }} --title ${{ env.tag_name }} --repo ${{ github.repository }} --notes "automated release" || echo "release already exists"
+
+          GITHUB_LINK=https://github.com/${GITHUB_REPOSITORY}/releases/download/${{ env.tag_name }}
+
+          if [[ -z "$(du --threshold=${LIMIT_MB}M ${{ steps.build.outputs.iso_path }})" ]]; then
+            # iso is small enough to upload already
+            gh release upload ${{ env.tag_name }} --repo ${{ github.repository }} --clobber \
+              ${{ steps.build.outputs.iso_path }} ${{ steps.build.outputs.iso_path }}-CHECKSUM
+          else
+            # iso is too big - creating a split-zip
+            zip -j -s ${LIMIT_MB}m ${{ steps.build.outputs.iso_path }}.zip ${{ steps.build.outputs.iso_path }}
+            
+            REMOTE_FILES=$(find . -maxdepth 1 -name "*.z*" -exec basename {} \; | xargs -I{} echo "-w \"${GITHUB_LINK}/{}\"")
+            gh release upload ${{ env.tag_name }} --repo ${{ github.repository }} --clobber \
+              ./${{ steps.build.outputs.iso_path }}+(.z*|.sha*|.pkgs|.sig|.torrent)
+            
+            # Upload Checksum
+            gh release upload ${{ env.tag_name }} --repo ${{ github.repository }} --clobber \
+              ${{ steps.build.outputs.iso_path }}-CHECKSUM
+          fi

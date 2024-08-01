@@ -36,7 +36,7 @@ jobs:
         id: var
         run: |
           VARIANT="Kinoite"
-          echo "variant=${VARIANT}" >> $GITHUB_OUTPUT
+          echo "variant=${VARIANT}" >> $GITHUB_ENV
 
       - name: Generate ISO  
         uses: jasonn3/build-container-installer@main
@@ -45,7 +45,7 @@ jobs:
           arch: x86_64
           image_name: ${{ matrix.image_name }}
           image_repo: ${{ env.IMAGE_REGISTRY }}
-          variant: ${{ steps.var.outputs.variant }}
+          variant: ${{ env.variant }}
           version: ${{ matrix.major_version }}
           image_tag: ${{ matrix.image_tag }}
           iso_name: ${{ matrix.image_name }}-${{ matrix.image_tag }}.iso
@@ -67,7 +67,7 @@ jobs:
         id: tag
         run: |
           TAG_NAME=$(date +'%Y%m%d')
-          echo "tag_name=${TAG_NAME}" >> $GITHUB_OUTPUT
+          echo "tag_name=${TAG_NAME}" >> $GITHUB_ENV
 
       - name: Create GitHub Release
         id: create_release
@@ -75,10 +75,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.tag.outputs.tag_name }}
-          release_name: Release ${{ steps.tag.outputs.tag_name }}
+          tag_name: ${{ env.tag_name }}
+          release_name: Release ${{ env.tag_name }}
           body: |
-            Release notes for ${{ steps.tag.outputs.tag_name }}
+            Release notes for ${{ env.tag_name }}
           draft: false
           prerelease: false
 

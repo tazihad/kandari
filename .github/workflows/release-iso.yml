@@ -38,6 +38,7 @@ jobs:
         run: |
           VARIANT="Kinoite"
           echo "variant=${VARIANT}" >> $GITHUB_ENV
+
       - name: Generate ISO  
         uses: jasonn3/build-container-installer@main
         id: build
@@ -63,4 +64,21 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
-      
+      - name: Upload ISO to SourceForge
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SOURCEFORGE_SSH_PRIVATE_KEY }}
+          SSH_PUBLIC_KEY: ${{ secrets.SOURCEFORGE_SSH_PUBLIC_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SOURCEFORGE_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          echo "${{ secrets.SOURCEFORGE_SSH_PUBLIC_KEY }}" > ~/.ssh/id_rsa.pub
+          chmod 600 ~/.ssh/id_rsa
+          chmod 644 ~/.ssh/id_rsa.pub
+          rsync -avz -e "ssh -o StrictHostKeyChecking=no" \
+            ${{ steps.build.outputs.iso_path }} \
+            ${{ steps.build.outputs.iso_path }}-CHECKSUM \
+            ${{ secrets.SOURCEFORGE_USERNAME }}@web.sourceforge.net:/home/frs/project/${{ secrets.SOURCEFORGE_PROJECT_NAME }}
+
+      - name: Clean up SSH keys
+        run: |
+          rm -rf ~/.ssh

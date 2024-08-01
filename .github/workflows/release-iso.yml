@@ -71,7 +71,7 @@ jobs:
 
       - name: Create GitHub Release and Upload ISO + Checksum
         id: upload-github-release
-        shell: bash -O extglob
+        shell: bash
         env:
           LIMIT_MB: '2000'
           GITHUB_TOKEN: ${{ secrets.kandari_release_iso_token }}

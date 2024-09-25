@@ -20,6 +20,6 @@ RUN chmod +x /tmp/akmods/scripts/*.sh && \
   /tmp/akmods/scripts/00-preinstall.sh && \
   /tmp/akmods/scripts/01-install.sh && \
   /tmp/akmods/scripts/02-postinstall.sh && \
-  /tmp/scripts/post-setup.sh --version ${FEDORA_RELEASE} --base ${BASE_IMAGE} && \
+  /tmp/scripts/build-initramfs.sh --version ${FEDORA_RELEASE} --base ${BASE_IMAGE} && \
   rm -rf /var/* /tmp/* && \
   ostree container commit

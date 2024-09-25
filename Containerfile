@@ -10,6 +10,7 @@ ARG FEDORA_RELEASE
 ARG BASE_IMAGE
 
 # Copying system files to image
+COPY system-files/base /
 COPY system-files/${BASE_IMAGE} /
 
 # Copying scripts to tmp

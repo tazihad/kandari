@@ -16,6 +16,7 @@ COPY system-files/${BASE_IMAGE} /
 COPY --chmod=0755 scripts /tmp/scripts
 
 RUN /tmp/scripts/setup.sh --version ${FEDORA_RELEASE} --base ${BASE_IMAGE} && \
+    /tmp/scripts/post-setup.sh --version ${FEDORA_RELEASE} --base ${BASE_IMAGE} && \
     rpm-ostree cleanup -m && \
     rm -rf /tmp/* /var/* && \
     ostree container commit

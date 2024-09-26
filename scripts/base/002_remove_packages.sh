@@ -13,4 +13,5 @@ rpm-ostree uninstall \
   libavutil-free \
   libpostproc-free \
   libswresample-free \
-  libswscale-free
+  libswscale-free \
+  virtualbox-guest-additions

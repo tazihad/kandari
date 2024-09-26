@@ -108,5 +108,5 @@
 ## ভেরিফাই করুন  
 গিটহাব থেকে `kandari.pub` ডাউনলোড করুন তারপর টারমিনাল থেকে ভেরিফাই করুন:
 ```
-cosign verify --key kandari.pub ghcr.io/tazihad/kandari-nvidia:latest
+cosign verify --key https://raw.githubusercontent.com/tazihad/kandari/main/kandari.pub ghcr.io/tazihad/kandari-kde:latest
 ```

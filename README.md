@@ -109,6 +109,6 @@ Install **signed** image without rebasing to **unsigned** image.
 ## Verification  
 These images are signed with Sigstore's cosign. You can verify the signature by downloading the `kandari.pub` file from this repo and running the following command:
 ```
-cosign verify --key kandari.pub ghcr.io/tazihad/kandari-kde:latest
+cosign verify --key https://raw.githubusercontent.com/tazihad/kandari/main/kandari.pub ghcr.io/tazihad/kandari-kde:latest
 ```
 

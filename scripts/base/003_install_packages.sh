@@ -2,12 +2,21 @@
 
 set -euox pipefail
 
-rpm-ostree install \
-  distrobox \
-  fastfetch \
-  ffmpeg \
-  ffmpeg-libs \
-  htop \
-  podman-compose \
+# Define packages to install
+packages=(
+  distrobox
+  fastfetch
+  ffmpeg
+  ffmpeg-libs
+  htop
+  podman-compose
   zsh
+)
 
+# Function to install packages
+install_packages() {
+  rpm-ostree install "${packages[@]}"
+}
+
+# Call the function to install the packages
+install_packages

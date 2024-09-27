@@ -9,17 +9,17 @@ FROM ${NVIDIA_AKMODS_IMAGE}:${NVIDIA_AKMODS_TAG} as akmods-nvidia
 FROM ${BASE_IMAGE_FULL} as base-nvidia
 
 COPY system-files/nvidia /
-COPY --chmod=0755 scripts /tmp/scripts
+COPY --chmod=0755 build-files /tmp/build-files
 
 COPY --from=akmods-nvidia /rpms /tmp/akmods/rpms
 COPY --from=akmods-nvidia /info /tmp/akmods/info
-COPY --from=akmods-nvidia /scripts /tmp/akmods/scripts
+COPY --from=akmods-nvidia /scripts /tmp/akmods/build-files-akmods
 
-RUN chmod +x /tmp/akmods/scripts/*.sh && \
-  chmod +x /tmp/scripts/*.sh && \
-  /tmp/akmods/scripts/00-preinstall.sh && \
-  /tmp/akmods/scripts/01-install.sh && \
-  /tmp/akmods/scripts/02-postinstall.sh && \
-  /tmp/scripts/build-initramfs.sh --version ${FEDORA_RELEASE} --base ${BASE_IMAGE} && \
+RUN chmod +x /tmp/akmods/build-files-akmods/*.sh && \
+  chmod +x /tmp/build-files/*.sh && \
+  /tmp/akmods/build-files/00-preinstall.sh && \
+  /tmp/akmods/build-files/01-install.sh && \
+  /tmp/akmods/build-files/02-postinstall.sh && \
+  /tmp/build-files/build_initramfs.sh --version ${FEDORA_RELEASE} --base ${BASE_IMAGE} && \
   rm -rf /var/* /tmp/* && \
   ostree container commit

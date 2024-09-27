@@ -32,21 +32,21 @@ if [[ -z "$FEDORA_VERSION" ]]; then
   exit 1
 fi
 
-for script in /tmp/scripts/base/*.sh; do
-  if [[ -f "$script" ]]; then
-    echo "Running $script"
-    bash "$script" --version "$FEDORA_VERSION"
+for build-file in /tmp/build-file/base/*.sh; do
+  if [[ -f "$build-file" ]]; then
+    echo "Running $build-file"
+    bash "$build-file" --version "$FEDORA_VERSION"
   fi
 done
 
-# If the image is BASE, then we don't need to run the same scripts again
+# If the image is BASE, then we don't need to run the same build-file again
 if [[ "$BASE" == "base" ]]; then
   exit 0
 fi
 
-for script in /tmp/scripts/$BASE/*.sh; do
-  if [[ -f "$script" ]]; then
-    echo "Running $script"
-    bash "$script" --version "$FEDORA_VERSION"
+for build-file in /tmp/build-file/$BASE/*.sh; do
+  if [[ -f "$build-file" ]]; then
+    echo "Running $build-file"
+    bash "$build-file" --version "$FEDORA_VERSION"
   fi
 done

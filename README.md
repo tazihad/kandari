@@ -4,7 +4,7 @@
 - [বাংলা](README.bn.md)
 
 # Kandari OS
-[![Build Kandari Images](https://github.com/tazihad/kandari/actions/workflows/build-kandari.yml/badge.svg)](https://github.com/tazihad/kandari/actions/workflows/build-kandari.yml)
+[![Build Kandari Images](https://github.com/tazihad/kandari/actions/workflows/build_kandari.yml/badge.svg)](https://github.com/tazihad/kandari/actions/workflows/build_kandari.yml)
 
 Kandarai OS based on Fedora Atomic.
 

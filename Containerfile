@@ -13,11 +13,11 @@ ARG BASE_IMAGE
 COPY system-files/base /
 COPY system-files/${BASE_IMAGE} /
 
-# Copying scripts to tmp
-COPY --chmod=0755 scripts /tmp/scripts
+# Copying build-files to tmp
+COPY --chmod=0755 build-files /tmp/build-files
 
-RUN /tmp/scripts/setup.sh --version ${FEDORA_RELEASE} --base ${BASE_IMAGE} && \
-    /tmp/scripts/build-initramfs.sh --version ${FEDORA_RELEASE} --base ${BASE_IMAGE} && \
+RUN /tmp/build-files/setup.sh --version ${FEDORA_RELEASE} --base ${BASE_IMAGE} && \
+    /tmp/build-files/build_initramfs.sh --version ${FEDORA_RELEASE} --base ${BASE_IMAGE} && \
     rpm-ostree cleanup -m && \
     rm -rf /tmp/* /var/* && \
     ostree container commit

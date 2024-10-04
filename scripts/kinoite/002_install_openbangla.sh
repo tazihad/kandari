@@ -2,6 +2,8 @@
 
 set -euox pipefail
 
+RELEASE="$(rpm -E %fedora)"
+
 curl -fsSL -o /tmp/badshah-openbangla-keyboard-fedora-"${RELEASE}".repo \
 https://copr.fedorainfracloud.org/coprs/badshah/openbangla-keyboard/repo/fedora-"${RELEASE}"/badshah-openbangla-keyboard-fedora-"${RELEASE}".repo
 

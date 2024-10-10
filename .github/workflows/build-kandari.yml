@@ -124,7 +124,7 @@ jobs:
 
 
       - name: Install Cosign for Signing
-        uses: sigstore/cosign-installer@v3.5.0
+        uses: sigstore/cosign-installer@v3.7.0
         if: github.event_name != 'pull_request'
 
       - name: Sign Kandari Image
@@ -241,7 +241,7 @@ jobs:
             --disable-content-trust
 
       - name: Install Cosign for Signing
-        uses: sigstore/cosign-installer@v3.5.0
+        uses: sigstore/cosign-installer@v3.7.0
         if: github.event_name != 'pull_request'
 
       - name: Sign NVIDIA Image

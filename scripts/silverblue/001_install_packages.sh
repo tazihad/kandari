@@ -4,9 +4,10 @@ set -euox pipefail
 
 # Define packages to install
 packages=(
-  qt6-qtimageformats
-  fcitx5
-  kcm-fcitx5
+  adw-gtk3-theme
+  ffmpegthumbnailer
+  gnome-shell-extension-appindicator
+  gnome-tweaks
 )
 
 # Function to install packages

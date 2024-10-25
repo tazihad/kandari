@@ -1,12 +1,10 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 set -euox pipefail
 
 # Define packages to install
 packages=(
-  qt6-qtimageformats
-  fcitx5
-  kcm-fcitx5
+  libva-intel-driver
 )
 
 # Function to install packages

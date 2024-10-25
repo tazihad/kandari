@@ -4,9 +4,10 @@ set -euox pipefail
 
 # Define packages to install
 packages=(
-  ffmpegthumbnailer
-  gnome-tweaks
   adw-gtk3-theme
+  ffmpegthumbnailer
+  gnome-shell-extension-appindicator
+  gnome-tweaks
 )
 
 # Function to install packages

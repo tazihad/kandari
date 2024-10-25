@@ -6,7 +6,6 @@ set -euox pipefail
 packages=(
   adw-gtk3-theme
   ffmpegthumbnailer
-  gnome-shell-extension-appindicator
   gnome-tweaks
 )
 

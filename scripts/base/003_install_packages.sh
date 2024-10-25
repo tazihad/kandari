@@ -10,7 +10,6 @@ packages=(
   ffmpeg-libs
   htop
   podman-compose
-  waydroid
   zsh
 )
 

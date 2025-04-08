@@ -1,3 +1,7 @@
+# This Project has been moved to https://github.com/kandari-os/kandari
+
+
+
 ## Available Languages
 
 - [English](README.md)
